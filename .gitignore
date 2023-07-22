@@ -1,0 +1,13 @@
+## Application
+node_modules
+dist
+logs
+.env
+
+## Terraform
+.terraform/
+/.terraform
+.terraform
+*.terraform.lock.hcl
+*.tfstate
+terraform.tfstate.backup

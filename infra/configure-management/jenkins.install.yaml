@@ -1,0 +1,57 @@
+- name: Jenkins tools on Linux
+  hosts: jenkins
+  become: true
+  tasks:
+    ## 변수 매핑
+    - name: 'Setting Jenkins Connection Variables'
+      set_fact:
+        jenkins_host: "{{ hostvars['jenkins-linux1'].ansible_host }}"
+
+    - name: 'yum update'
+      yum:
+        update_cache: yes
+
+    - name: 'install tools'
+      yum:
+        name:
+          - htop
+        state: present
+
+    ## Jenkins 설치
+    - name: 'Install Jenkins Repository'
+      shell: |
+        sudo wget -O /etc/yum.repos.d/jenkins.repo \
+        https://pkg.jenkins.io/redhat-stable/jenkins.repo
+        sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+        sudo yum upgrade
+        sudo amazon-linux-extras install java-openjdk11 -y
+        sudo dnf install java-11-amazon-corretto -y
+        sudo yum install jenkins -y
+        sudo systemctl enable jenkins
+        sudo systemctl start jenkins
+        sudo systemctl status jenkins
+
+    ## [DEBUG] Administrator 비밀번호 찾기
+    - name: 'Retrieve Jenkins Password'
+      command: 'sudo cat /var/lib/jenkins/secrets/initialAdminPassword'
+      register: jenkins_password
+      ignore_errors: yes
+
+    ## [DEBUG] Jenkins 구동 상태
+    - name: 'Debug Status Jenkins'
+      shell: sudo systemctl status jenkins
+      register: jenkins_status
+      ignore_errors: yes
+
+    # Debug
+    - name: 'Debug Ansible host'
+      debug:
+        var: '{{ jenkins_host }}'
+
+    - name: 'Debug Jenkins Password'
+      debug:
+        var: jenkins_password.stdout_lines
+
+    # - name: 'Debug Jenkins'
+    #   debug:
+    #     var: jenkins_status.stdout_lines
