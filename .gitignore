@@ -11,3 +11,4 @@ logs
 *.terraform.lock.hcl
 *.tfstate
 terraform.tfstate.backup
+*.tfvars

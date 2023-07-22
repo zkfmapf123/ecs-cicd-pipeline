@@ -12,7 +12,7 @@
   - [x] EC2 (Jenkins)
   - [x] ALB (Jenkins + ECS)
   - [x] ECR
-  - [ ] ECS (Blue/green + Auto Scaling)
+  - [x] ECS (Blue/green + Auto Scaling)
   - [ ] CloudFront
   - [ ] S3
 - [ ] CI/CD

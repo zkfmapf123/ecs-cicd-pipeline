@@ -206,6 +206,8 @@ resource "aws_ecs_cluster_capacity_providers" "cluster-provider" {
 #############################################################
 # ECS Task Definition
 #############################################################
+variable "DB_HOST" {}
+
 resource "aws_ecs_task_definition" "task_definition" {
   family                   = "todolist-family"
   requires_compatibilities = ["FARGATE"]
@@ -237,7 +239,33 @@ resource "aws_ecs_task_definition" "task_definition" {
           "awslogs-region"        = "ap-northeast-2" # AWS 리전 이름
           "awslogs-stream-prefix" = "ecs"            # 로그 스트림의 접두사
         }
-      }
+      },
+      environment = [
+        {
+          "name" : "PORT"
+          "value" : "3000"
+        },
+        {
+          "name" : "DB_PORT"
+          "value" : "3306"
+        },
+        {
+          "name" : "DB_HOST"
+          "value" : "${var.DB_HOST}"
+        },
+        {
+          "name" : "DB_USER"
+          "value" : "root"
+        },
+        {
+          "name" : "DB_PASSWORD"
+          "value" : "12341234"
+        },
+        {
+          "name" : "DB_NAME"
+          "value" : "todomini"
+        }
+      ]
     }
   ])
 }
