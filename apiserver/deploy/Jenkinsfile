@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     stages {
-        stage('Hello') {
+        stage('Deploy ECS') {
             steps {
-                echo 'Hello World'
+                sh "ls"
             }
         }
     }
