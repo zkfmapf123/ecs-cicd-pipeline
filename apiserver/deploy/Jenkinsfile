@@ -4,15 +4,20 @@ pipeline {
     stages {
         stage('Push ECR') {
             steps {
-                script {
-                    dir("apiserver"){
+                dir("apiserver") {
+                    script {
                         sh "ls"
-                        // sh "docker build -t 182024812696.dkr.ecr.ap-northeast-2.amazonaws.com/todolist-repository:build-latest ."
                     }
                 }
             }
         }
 
-        stage("")
+        stage("Deploy ECS") {
+            steps {
+                dir("apiserver/deploy") {
+                    sh "ls"
+                }
+            }
+        }
     }
 }
