@@ -12,7 +12,6 @@ pipeline {
                         docker.withRegistry("https://182024812696.dkr.ecr.ap-northeast-2.amazonaws.com/todolist-repository:build-latest", "ecr:ap-northeast-2:leedonggyu-aws-credentials") {
                             docker.image("182024812696.dkr.ecr.ap-northeast-2.amazonaws.com/todolist-repository:build-latest").push()
                         }
-
                     }
                 }
             }
@@ -21,7 +20,12 @@ pipeline {
         stage("Deploy ECS") {
             steps {
                 dir("apiserver/deploy") {
-                    sh "ls"
+                    script {
+                        withAWS(credentials:"leedonggyu-aws-credentials", region:"ap-northeast-2") {
+                            sh "aws ecs register-task-definition --cli-input-json file://task-definition.json"          
+                            sh "aws ecs update-service --cluster pipeline-todolist-cluster --service todolist-service --task-definition todolist-family"
+                        }
+                    }
                 }
             }
         }
