@@ -1,6 +1,8 @@
 pipeline {
     agent any
 
+    // 원래는 다 환경변수에 담아서 .. 진행하자..
+
     stages {
         stage('Push ECR') {
             steps {
