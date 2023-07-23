@@ -6,7 +6,7 @@ pipeline {
             steps {
                 dir("apiserver") {
                     script {
-                        sh "ls"
+                        sh "docker build -t build-latest ."
                     }
                 }
             }
