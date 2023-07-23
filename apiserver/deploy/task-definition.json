@@ -1,5 +1,4 @@
 {
-  "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:182024812696:task-definition/todolist-family:11",
   "containerDefinitions": [
     {
       "name": "todolist-container",
@@ -57,44 +56,9 @@
   "taskRoleArn": "arn:aws:iam::182024812696:role/pipeline-ecs-task-definition",
   "executionRoleArn": "arn:aws:iam::182024812696:role/pipeline-ecs-task-definition",
   "networkMode": "awsvpc",
-  "revision": 11,
   "volumes": [],
-  "status": "ACTIVE",
-  "requiresAttributes": [
-    {
-      "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
-    },
-    {
-      "name": "ecs.capability.execution-role-awslogs"
-    },
-    {
-      "name": "com.amazonaws.ecs.capability.ecr-auth"
-    },
-    {
-      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
-    },
-    {
-      "name": "com.amazonaws.ecs.capability.task-iam-role"
-    },
-    {
-      "name": "ecs.capability.execution-role-ecr-pull"
-    },
-    {
-      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
-    },
-    {
-      "name": "ecs.capability.task-eni"
-    },
-    {
-      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
-    }
-  ],
-  "placementConstraints": [],
-  "compatibilities": ["EC2", "FARGATE"],
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "1024",
   "memory": "2048",
-  "registeredAt": "2023-07-22T16:33:27.824Z",
-  "registeredBy": "arn:aws:iam::182024812696:user/admin",
   "tags": []
 }
