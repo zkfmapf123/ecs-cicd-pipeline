@@ -16,8 +16,8 @@
   - [ ] CloudFront
   - [ ] S3
 - [ ] CI/CD
-  - [ ] Git Webhoook trigger on Jenkins
-  - [ ] Slack Notification
+  - [x] Git Webhoook trigger on Jenkins
+  - [x] Slack Notification
 - [ ] Test
   - [ ] Stress Test (Auto Scaling)
   - [ ] Deploy Test (Blue/Green)

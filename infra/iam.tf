@@ -62,7 +62,6 @@ resource "aws_iam_policy" "get_ecr_list" {
   })
 }
 
-
 resource "aws_iam_role_policy_attachment" "cloudwatch_group_attachment" {
   for_each = {
     for i, v in [aws_iam_policy.cloudwatch-group, aws_iam_policy.get_ecr_list] :
