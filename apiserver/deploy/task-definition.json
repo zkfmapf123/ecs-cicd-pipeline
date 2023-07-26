@@ -3,8 +3,8 @@
     {
       "name": "todolist-container",
       "image": "182024812696.dkr.ecr.ap-northeast-2.amazonaws.com/todolist-repository:build-latest",
-      "cpu": 1024,
-      "memory": 2048,
+      "cpu": 256,
+      "memory": 512,
       "portMappings": [
         {
           "containerPort": 3000,

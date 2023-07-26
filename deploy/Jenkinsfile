@@ -19,13 +19,25 @@ pipeline {
             }
         }
 
-        stage("Deploy ECS") {
+        // stage("Deploy ECS") {
+        //     steps {
+        //         dir("apiserver/deploy") {
+        //             script {
+        //                 withAWS(credentials:"leedonggyu-aws-credentials", region:"ap-northeast-2") {
+        //                     sh "aws ecs register-task-definition --cli-input-json file://task-definition.json"          
+        //                     sh "aws ecs update-service --cluster pipeline-todolist-cluster --service todolist-service --task-definition todolist-family"
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
+        stage("Deploy ECS via CodeDeploy") {
             steps {
                 dir("apiserver/deploy") {
                     script {
-                        withAWS(credentials:"leedonggyu-aws-credentials", region:"ap-northeast-2") {
-                            sh "aws ecs register-task-definition --cli-input-json file://task-definition.json"          
-                            sh "aws ecs update-service --cluster pipeline-todolist-cluster --service todolist-service --task-definition todolist-family"
+                        withAWS(credentials: "leedonggyu-aws-credentials", region: "ap-northeast-2") {
+                            sh "aws deploy create-deployment --application-name YourCodeDeployApplicationName --deployment-group-name YourDeploymentGroupName --revision revisionType=AppSpecContent,value=\"$(cat appspec.yml)\""
                         }
                     }
                 }
