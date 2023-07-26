@@ -364,47 +364,58 @@ resource "aws_codedeploy_app" "ecs_app" {
 resource "aws_codedeploy_deployment_group" "ecs_deployment_group" {
   app_name              = aws_codedeploy_app.ecs_app.name
   deployment_group_name = "todolist-ecs-deployment-group"
-  deployment_config_name = "CodeDeployDefault.ECSLinear10PercentEvery1Minutes" // Canary 배포도 가능
-  service_role_arn = aws_iam_role.codedeploy_role.arn
+  deployment_config_name = "CodeDeployDefault.ECSLinear10PercentEvery1Minutes" // 기본 배포 구성을 사용하며, 블루/그린 및 카나리아 배포를 지원합니다.
+  service_role_arn = aws_iam_role.codedeploy_role.arn // 배포를 수행할 CodeDeploy에 사용할 IAM 역할입니다.
 
+  // 배포 실패 시 자동 롤백 구성
   auto_rollback_configuration {
     enabled = true
     events  = ["DEPLOYMENT_FAILURE"]
   }
 
+  // 블루/그린 배포 전략 구성
   blue_green_deployment_config {
+    // 배포가 시간 초과되었을 때 취할 동작 지정
     deployment_ready_option {
       action_on_timeout = "CONTINUE_DEPLOYMENT"
     }
 
+    // 성공적인 배포 후 이전 인스턴스 종료 (블루/그린)
     terminate_blue_instances_on_deployment_success {
       action                           = "TERMINATE"
       termination_wait_time_in_minutes = 5
     }
   }
 
+  // 배포 스타일 정의: 트래픽 제어와 함께 블루/그린 배포
   deployment_style {
-    deployment_option = "WITH_TRAFFIC_CONTROL"
-    deployment_type   = "BLUE_GREEN"
+    deployment_option = "WITH_TRAFFIC_CONTROL" // 배포 트래픽 전환 제어 사용
+    deployment_type   = "BLUE_GREEN" // 블루/그린 배포 전략
   }
 
+  // 배포 그룹에 대한 ECS 서비스 구성
   ecs_service {
-    cluster_name = aws_ecs_cluster.cluster.name
-    service_name = aws_ecs_service.service.name
+    cluster_name = aws_ecs_cluster.cluster.name // ECS 클러스터 이름
+    service_name = aws_ecs_service.service.name // 배포할 ECS 서비스 이름
   }
 
+  // 블루/그린 배포를 위한 로드 밸런서 정보
   load_balancer_info {
     target_group_pair_info {
+      // 프로덕션 트래픽 경로를 위한 리스너 ARN 지정
+      // 이러한 ARN은 프로덕션 트래픽을 받을 ALB (Application Load Balancer) 리스너를 나타냅니다.
       prod_traffic_route {
         listener_arns = module.alb-todolist.http_tcp_listener_arns
       }
 
+      // 블루/그린 환경에 대한 타겟 그룹 지정
+      // 이 타겟 그룹은 블루와 그린 환경에 대한 ECS 서비스의 작업과 연관됩니다.
       target_group {
-        name = module.alb-todolist.target_group_names[0]
+        name = module.alb-todolist.target_group_names[0] // 블루 환경 타겟 그룹 이름
       }
 
       target_group {
-        name = module.alb-todolist.target_group_names[1]
+        name = module.alb-todolist.target_group_names[1] // 그린 환경 타겟 그룹 이름
       }
     }
   }
