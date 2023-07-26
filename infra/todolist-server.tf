@@ -294,5 +294,4 @@ resource "aws_ecs_service" "service" {
     container_name   = "todolist-container"
     container_port   = 3000
   }
-
 }
