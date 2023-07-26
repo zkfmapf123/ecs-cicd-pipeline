@@ -13,6 +13,8 @@
   - [x] ALB (Jenkins + ECS)
   - [x] ECR
   - [x] ECS (Blue/green + Auto Scaling)
+  - [ ] Use CodeDeploy
+  - [ ] Deploy Jenkins + AppSpec
   - [ ] CloudFront
   - [ ] S3
 - [ ] CI/CD
