@@ -9,7 +9,7 @@ pipeline {
                 dir("apiserver") {
                     script {
                         def searchString = "&&BUILD_ID&&"
-                        def pipelineScriptPath = "apiserver/deploy/task-definition.json"
+                        def pipelineScriptPath = "deploy/task-definition.json"
                         
                         // Read to Json file
                         def pipelineScriptContent = readFile(file: pipelineScriptPath)
