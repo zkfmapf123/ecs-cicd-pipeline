@@ -19,10 +19,10 @@ pipeline {
                         writeFile(file: pipelineScriptPath, text: updatedPipelineScript)
 
                         sh "docker build -t build-${env.BUILD_ID} ."
-                        sh "docker tag build-env.BUILD_ID 182024812696.dkr.ecr.ap-northeast-2.amazonaws.com/todolist-repository:build-env.BUILD_ID"
+                        sh "docker tag build-${env.BUILD_ID} 182024812696.dkr.ecr.ap-northeast-2.amazonaws.com/todolist-repository:build-${env.BUILD_ID}"
 
-                        docker.withRegistry("https://182024812696.dkr.ecr.ap-northeast-2.amazonaws.com/todolist-repository:build-env.BUILD_ID", "ecr:ap-northeast-2:leedonggyu-aws-credentials") {
-                            docker.image("182024812696.dkr.ecr.ap-northeast-2.amazonaws.com/todolist-repository:build-env.BUILD_ID").push()
+                        docker.withRegistry("https://182024812696.dkr.ecr.ap-northeast-2.amazonaws.com/todolist-repository:build-${env.BUILD_ID}", "ecr:ap-northeast-2:leedonggyu-aws-credentials") {
+                            docker.image("182024812696.dkr.ecr.ap-northeast-2.amazonaws.com/todolist-repository:build-${env.BUILD_ID}").push()
                         }
                     }
                 }
