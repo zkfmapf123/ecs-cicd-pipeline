@@ -2,7 +2,7 @@
   "containerDefinitions": [
     {
       "name": "todolist-container",
-      "image": "182024812696.dkr.ecr.ap-northeast-2.amazonaws.com/todolist-repository:build-latest",
+      "image": "182024812696.dkr.ecr.ap-northeast-2.amazonaws.com/todolist-repository:build-&&BUILD_ID&&",
       "cpu": 256,
       "memory": 512,
       "portMappings": [

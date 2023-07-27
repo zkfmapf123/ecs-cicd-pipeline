@@ -8,40 +8,51 @@ pipeline {
             steps {
                 dir("apiserver") {
                     script {
-                        sh "docker build -t build-latest ."
-                        sh "docker tag build-latest 182024812696.dkr.ecr.ap-northeast-2.amazonaws.com/todolist-repository:build-latest"
+                        def searchString = "&&BUILD_ID&&"
+                        def pipelineScriptPath = "apiserver/deploy/task-definition.json"
+                        
+                        // Read to Json file
+                        def pipelineScriptContent = readFile(file: pipelineScriptPath)
 
-                        docker.withRegistry("https://182024812696.dkr.ecr.ap-northeast-2.amazonaws.com/todolist-repository:build-latest", "ecr:ap-northeast-2:leedonggyu-aws-credentials") {
-                            docker.image("182024812696.dkr.ecr.ap-northeast-2.amazonaws.com/todolist-repository:build-latest").push()
+                        // Replace the string
+                        def updatedPipelineScript = pipelineScriptContent.replace(searchString, env.BUILD_ID)
+                        writeFile(file: pipelineScriptPath, text: updatedPipelineScript)
+
+                        sh "docker build -t build-${env.BUILD_ID} ."
+                        sh "docker tag build-env.BUILD_ID 182024812696.dkr.ecr.ap-northeast-2.amazonaws.com/todolist-repository:build-env.BUILD_ID"
+
+                        docker.withRegistry("https://182024812696.dkr.ecr.ap-northeast-2.amazonaws.com/todolist-repository:build-env.BUILD_ID", "ecr:ap-northeast-2:leedonggyu-aws-credentials") {
+                            docker.image("182024812696.dkr.ecr.ap-northeast-2.amazonaws.com/todolist-repository:build-env.BUILD_ID").push()
                         }
                     }
                 }
             }
         }
 
-        // stage("Deploy ECS") {
+        // Deploy use ECS (Rolling Update)
+        stage("Deploy ECS") {
+            steps {
+                dir("apiserver/deploy") {
+                    script {
+                        withAWS(credentials:"leedonggyu-aws-credentials", region:"ap-northeast-2") {
+                            sh "aws ecs register-task-definition --cli-input-json file://task-definition.json"          
+                            sh "aws ecs update-service --cluster pipeline-todolist-cluster --service todolist-service --task-definition todolist-family"
+                        }
+                    }
+                }
+            }
+        }
+
+        // stage("Deploy ECS via CodeDeploy") {
         //     steps {
         //         dir("apiserver/deploy") {
         //             script {
-        //                 withAWS(credentials:"leedonggyu-aws-credentials", region:"ap-northeast-2") {
-        //                     sh "aws ecs register-task-definition --cli-input-json file://task-definition.json"          
-        //                     sh "aws ecs update-service --cluster pipeline-todolist-cluster --service todolist-service --task-definition todolist-family"
+        //                 withAWS(credentials: "leedonggyu-aws-credentials", region: "ap-northeast-2") {
+        //                     sh "aws deploy create-deployment --application-name YourCodeDeployApplicationName --deployment-group-name YourDeploymentGroupName --revision revisionType=AppSpecContent,value=\"$(cat appspec.yml)\""
         //                 }
         //             }
         //         }
         //     }
         // }
-
-        stage("Deploy ECS via CodeDeploy") {
-            steps {
-                dir("apiserver/deploy") {
-                    script {
-                        withAWS(credentials: "leedonggyu-aws-credentials", region: "ap-northeast-2") {
-                            sh "aws deploy create-deployment --application-name YourCodeDeployApplicationName --deployment-group-name YourDeploymentGroupName --revision revisionType=AppSpecContent,value=\"$(cat appspec.yml)\""
-                        }
-                    }
-                }
-            }
-        }
     }
 }
