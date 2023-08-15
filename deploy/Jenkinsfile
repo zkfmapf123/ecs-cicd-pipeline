@@ -1,6 +1,13 @@
 pipeline {
     agent any
 
+    environment { 
+        REGION = "ap-northeast-2"
+        ECR_REPOSITORY = "182024812696.dkr.ecr.${ENV.REGION}.amazonaws.com"
+        CONTINAER_NAME = "todolist-repository:build"
+        CREDENTIALS="leedonggyu-aws-credentials"
+    }    
+
     // 원래는 다 환경변수에 담아서 .. 진행하자..
 
     stages {
@@ -19,24 +26,10 @@ pipeline {
                         writeFile(file: pipelineScriptPath, text: updatedPipelineScript)
 
                         sh "docker build -t build-${env.BUILD_ID} ."
-                        sh "docker tag build-${env.BUILD_ID} 182024812696.dkr.ecr.ap-northeast-2.amazonaws.com/todolist-repository:build-${env.BUILD_ID}"
+                        sh "docker tag build-${env.BUILD_ID} ${env.ECR_REPOSITORY}/${env.CONTINAER_NAME}-${env.BUILD_ID}"
 
-                        docker.withRegistry("https://182024812696.dkr.ecr.ap-northeast-2.amazonaws.com/todolist-repository:build-${env.BUILD_ID}", "ecr:ap-northeast-2:leedonggyu-aws-credentials") {
-                            docker.image("182024812696.dkr.ecr.ap-northeast-2.amazonaws.com/todolist-repository:build-${env.BUILD_ID}").push()
-                        }
-                    }
-                }
-            }
-        }
-
-        // Deploy use ECS (Rolling Update)
-        stage("Deploy ECS") {
-            steps {
-                dir("apiserver/deploy") {
-                    script {
-                        withAWS(credentials:"leedonggyu-aws-credentials", region:"ap-northeast-2") {
-                            sh "aws ecs register-task-definition --cli-input-json file://task-definition.json"          
-                            sh "aws ecs update-service --cluster pipeline-todolist-cluster --service todolist-service --task-definition todolist-family"
+                        docker.withRegistry("https://${env.ECR_REPOSITORY}/${env.CONTINAER_NAME}-${env.BUILD_ID}", "ecr:${env.REGION}:${env.CREDENTIALS}") {
+                            docker.image("${env.ECR_REPOSITORY}/${env.CONTINAER_NAME}-${env.BUILD_ID}").push()
                         }
                     }
                 }
@@ -44,15 +37,14 @@ pipeline {
         }
 
         // stage("Deploy ECS via CodeDeploy") {
-        //     steps {
-        //         dir("apiserver/deploy") {
-        //             script {
-        //                 withAWS(credentials: "leedonggyu-aws-credentials", region: "ap-northeast-2") {
-        //                     sh "aws deploy create-deployment --application-name YourCodeDeployApplicationName --deployment-group-name YourDeploymentGroupName --revision revisionType=AppSpecContent,value=\"$(cat appspec.yml)\""
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-    }
+            steps {
+                dir("apiserver/deploy") {
+                    script {
+                        withAWS(credentials: "${env.CREDENTIALS}", region: "${env.REGION}") {
+                            sh "aws deploy create-deployment --application-name todolist-ecs-app --deployment-group-name todolist-ecs-deployment-group --revision revisionType=AppSpecContent,value=\"$(cat appspec.yml)\""
+                        }
+                    }
+                }
+            }
+        }
 }

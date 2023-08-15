@@ -63,7 +63,7 @@ module "alb-todolist" {
       }
     },
     {
-      name = "${local.prefix}-todolist-blue-tg"
+      name             = "${local.prefix}-todolist-blue-tg"
       backend_protocol = "HTTP"
       backend_port     = 3000
       target_type      = "ip"
@@ -299,25 +299,25 @@ resource "aws_iam_role" "codedeploy_role" {
 
   assume_role_policy = jsonencode({
 
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "codedeploy.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    },
-    {
-        "Sid": "",
-        "Effect": "Allow",
-        "Principal": {
-          "Service": "ecs-tasks.amazonaws.com"  # Allow ECS tasks to assume the role
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Sid" : "",
+        "Effect" : "Allow",
+        "Principal" : {
+          "Service" : "codedeploy.amazonaws.com"
         },
-        "Action": "sts:AssumeRole"
+        "Action" : "sts:AssumeRole"
+      },
+      {
+        "Sid" : "",
+        "Effect" : "Allow",
+        "Principal" : {
+          "Service" : "ecs-tasks.amazonaws.com" # Allow ECS tasks to assume the role
+        },
+        "Action" : "sts:AssumeRole"
       }
-  ]
+    ]
   })
 }
 
@@ -362,10 +362,10 @@ resource "aws_codedeploy_app" "ecs_app" {
 ## Code Deploy Deployment Group
 ###############################
 resource "aws_codedeploy_deployment_group" "ecs_deployment_group" {
-  app_name              = aws_codedeploy_app.ecs_app.name
-  deployment_group_name = "todolist-ecs-deployment-group"
+  app_name               = aws_codedeploy_app.ecs_app.name
+  deployment_group_name  = "todolist-ecs-deployment-group"
   deployment_config_name = "CodeDeployDefault.ECSLinear10PercentEvery1Minutes" // 기본 배포 구성을 사용하며, 블루/그린 및 카나리아 배포를 지원합니다.
-  service_role_arn = aws_iam_role.codedeploy_role.arn // 배포를 수행할 CodeDeploy에 사용할 IAM 역할입니다.
+  service_role_arn       = aws_iam_role.codedeploy_role.arn                    // 배포를 수행할 CodeDeploy에 사용할 IAM 역할입니다.
 
   // 배포 실패 시 자동 롤백 구성
   auto_rollback_configuration {
@@ -390,7 +390,7 @@ resource "aws_codedeploy_deployment_group" "ecs_deployment_group" {
   // 배포 스타일 정의: 트래픽 제어와 함께 블루/그린 배포
   deployment_style {
     deployment_option = "WITH_TRAFFIC_CONTROL" // 배포 트래픽 전환 제어 사용
-    deployment_type   = "BLUE_GREEN" // 블루/그린 배포 전략
+    deployment_type   = "BLUE_GREEN"           // 블루/그린 배포 전략
   }
 
   // 배포 그룹에 대한 ECS 서비스 구성

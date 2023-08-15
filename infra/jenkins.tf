@@ -1,111 +1,4 @@
 ##########################################################################
-# ALB (Jenkins)
-##########################################################################
-resource "aws_security_group" "jenkins-alb-sg" {
-  name   = "${local.prefix}-jenkins-alb-sg"
-  vpc_id = aws_vpc.vpc.id
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = [local.public_cidrs]
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = [local.public_cidrs]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "${local.prefix}-jenkins-alb-sg"
-  }
-}
-
-module "alb" {
-  source  = "terraform-aws-modules/alb/aws"
-  version = "~> 8.0"
-
-  name = "${local.prefix}-jenkins-alb"
-
-  vpc_id = aws_vpc.vpc.id
-  subnets = values({
-    for i, v in aws_subnet.publics :
-    i => v.id
-  })
-  security_groups = [aws_security_group.jenkins-alb-sg.id]
-
-  target_groups = [
-    {
-      name             = "${local.prefix}-jenkins-tg"
-      backend_protocol = "HTTP"
-      backend_port     = "80"
-      target_type      = "instance"
-      targets = {
-        jenkins = {
-          target_id = aws_instance.jenkins.id
-          port      = 80
-        }
-      }
-      health_check = {
-        enabled             = true
-        interval            = 30
-        path                = "/"
-        port                = "traffic-port"
-        healthy_threshold   = 3
-        unhealthy_threshold = 3
-        timeout             = 6
-        protocol            = "HTTP"
-        matcher             = "403"
-      }
-    }
-  ]
-
-  #   https_listeners = [
-  #     {
-  #       port               = 443
-  #       protocol           = "HTTPS"
-  #       certificate_arn    = ""
-  #       target_group_index = 0
-  #     }
-  #   ]
-
-  #   http_tcp_listeners = [
-  #     {
-  #       port        = 80
-  #       protocol    = "HTTP"
-  #       action_type = "redirect"
-  #       redirect = {
-  #         port        = "443"
-  #         protocol    = "HTTPS"
-  #         status_code = "HTTP_301"
-  #       }
-  #     }
-  #   ]
-
-  http_tcp_listeners = [
-    {
-      port               = 80
-      protocol           = "HTTP"
-      target_group_index = 0
-    }
-  ]
-
-  tags = {
-    Name = "${local.prefix}-jenkins-alb-sg"
-  }
-}
-
-##########################################################################
 # Jenkins EC2
 ##########################################################################
 resource "aws_security_group" "jenkins-sg" {
@@ -120,24 +13,17 @@ resource "aws_security_group" "jenkins-sg" {
   }
 
   ingress {
-    from_port       = 80
-    to_port         = 80
-    protocol        = "tcp"
-    security_groups = [aws_security_group.jenkins-alb-sg.id]
-  }
-
-  ingress {
-    from_port       = 443
-    to_port         = 443
-    protocol        = "tcp"
-    security_groups = [aws_security_group.jenkins-alb-sg.id]
-  }
-
-  ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = [local.public_cidrs]
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -182,5 +68,9 @@ resource "aws_instance" "jenkins" {
   tags = {
     Name = "${local.prefix}-jenkins-ec2"
   }
+}
 
+resource "aws_eip_association" "eip_assoc" {
+  instance_id   = aws_instance.jenkins.id
+  allocation_id = aws_eip.eip.id
 }
